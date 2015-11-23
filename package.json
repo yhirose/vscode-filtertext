@@ -1,14 +1,25 @@
 {
   "name": "FilterText",
+  "displayName": "Filter Text",
   "description": "Filter selected text through an external shell command.",
   "version": "0.0.1",
   "publisher": "yhirose",
+  "icon": "images/icon.png",
   "engines": {
     "vscode": "^0.10.1"
   },
   "categories": [
     "Other"
   ],
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/yhirose/vscode-filtertext/issues"
+  },
+  "homepage": "https://github.com/yhirose/vscode-filtertext/blob/master/README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yhirose/vscode-filtertext.git"
+  },
   "activationEvents": [
     "onCommand:extension.filterText"
   ],
