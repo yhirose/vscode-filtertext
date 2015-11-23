@@ -11,11 +11,10 @@
   "categories": [
     "Other"
   ],
-  "license": "SEE LICENSE IN LICENSE",
   "bugs": {
     "url": "https://github.com/yhirose/vscode-filtertext/issues"
   },
-  "homepage": "https://github.com/yhirose/vscode-filtertext/blob/master/README.md",
+  "homepage": "https://github.com/yhirose/vscode-filtertext",
   "repository": {
     "type": "git",
     "url": "https://github.com/yhirose/vscode-filtertext.git"
