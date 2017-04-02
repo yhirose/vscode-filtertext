@@ -2,7 +2,7 @@
   "name": "FilterText",
   "displayName": "Filter Text",
   "description": "Filter selected text through an external shell command.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "yhirose",
   "icon": "images/icon.png",
   "engines": {
@@ -19,11 +19,16 @@
     "url": "https://github.com/yhirose/vscode-filtertext.git"
   },
   "activationEvents": [
+    "onCommand:extension.filterTextInplace",
     "onCommand:extension.filterText"
   ],
   "main": "./out/src/extension",
   "contributes": {
     "commands": [
+      {
+        "command": "extension.filterTextInplace",
+        "title": "Filter Text Inplace"
+      },
       {
         "command": "extension.filterText",
         "title": "Filter Text"
@@ -32,7 +37,7 @@
     "keybindings": [
       {
         "key": "ctrl+k ctrl+f",
-        "command": "extension.filterText",
+        "command": "extension.filterTextInplace",
         "when": "editorTextFocus"
       }
     ]
@@ -47,6 +52,7 @@
   },
   "dependencies": {
     "shell-quote": "^1.4.3",
-    "which": "^1.2.0"
+    "which": "^1.2.0",
+    "tmp": "^0.0.31"
   }
 }
