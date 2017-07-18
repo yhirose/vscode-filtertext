@@ -24,6 +24,16 @@
   ],
   "main": "./out/src/extension",
   "contributes": {
+    "configuration": {
+      "title": "Filter Text configuration",
+      "properties": {
+        "filterText.useDocumentIfEmptySelection": {
+          "type": "boolean",
+          "default": true,
+          "description": "If no text is selected, filter the entire document."
+        }
+      }
+    },
     "commands": [
       {
         "command": "extension.filterTextInplace",
