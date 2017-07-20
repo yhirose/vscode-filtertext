@@ -3,6 +3,7 @@ import * as child_process from 'child_process';
 var which = require('which');
 var shell_quote = require('shell-quote');
 var tmp = require('tmp');
+var lastCommand: string = "";
 
 export function activate(context: vscode.ExtensionContext) {
     let inplace = vscode.commands.registerCommand('extension.filterTextInplace', () => filterText(true));
@@ -14,13 +15,15 @@ export function activate(context: vscode.ExtensionContext) {
 
 function filterText(inplace: boolean): void {
     vscode.window.showInputBox({
-        placeHolder: 'Plese enter command name and arguments.'
+        placeHolder: 'Please enter command name and arguments.',
+        value: lastCommand
     }).then((entry: string) => {
         if (entry) {
             var args = shell_quote.parse(entry);
             if (!args.length) {
                 return;
             }
+            lastCommand = entry; // save even if not a valid command to make it easier to fix a typo
             var name = args.shift();
 
             which(name, (err, path) => {
@@ -28,13 +31,27 @@ function filterText(inplace: boolean): void {
                     vscode.window.showErrorMessage('Invalid command is entered.');
                     return;
                 }
+                let config = (vscode.workspace.getConfiguration('filterText') as any);
+                let useDocument = config.useDocumentIfEmptySelection;
+                let editor = vscode.window.activeTextEditor;
+                let filter = child_process.spawn(path, args);
+                var range = undefined;
                 var filteredText = '';
-                var editor = vscode.window.activeTextEditor;
-                var filter = child_process.spawn(path, args);
+
                 if (!editor.selection.isEmpty) {
-                    filter.stdin.write(editor.document.getText(editor.selection));
+                    range = editor.selection;
+                }
+
+                if (range === undefined && editor.document.lineCount > 0 && useDocument === true) {
+                    let lineCount = editor.document.lineCount;
+                    range = new vscode.Range(0, 0, lineCount, editor.document.lineAt(lineCount-1).text.length);
+                }
+
+                if (range !== undefined) {
+                    filter.stdin.write(editor.document.getText(range));
                     filter.stdin.end();
                 }
+
                 filter.stdout.on('data', function (data) {
                     filteredText += data;
                 });
@@ -42,8 +59,14 @@ function filterText(inplace: boolean): void {
                     let target = inplace ? Promise.resolve(vscode.window.activeTextEditor) : getTempEditor();
                     target.then((editor) => {
                         editor.edit((editBuilder) => {
-                            editBuilder.replace(editor.selection, filteredText);
+                            if (inplace) {
+                                editBuilder.replace(range, filteredText);
+                            }
+                            else {
+                                editBuilder.insert(editor.document.positionAt(0), filteredText);
+                            }
                         });
+                        editor.revealRange(range);
                     }, (reason: Error) => {
                         vscode.window.showErrorMessage(reason.message);
                     });
