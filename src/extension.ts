@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import * as child_process from 'child_process';
 var which = require('which');
 var shell_quote = require('shell-quote');
-var tmp = require('tmp');
 var lastCommand: string = "";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -56,14 +55,11 @@ function filterText(inplace: boolean): void {
                     filteredText += data;
                 });
                 filter.stdout.on('end', function () {
-                    let target = inplace ? Promise.resolve(vscode.window.activeTextEditor) : getTempEditor();
+                    let target = inplace ? Promise.resolve(vscode.window.activeTextEditor) : getTempEditor(filteredText);
                     target.then((editor) => {
                         editor.edit((editBuilder) => {
                             if (inplace) {
                                 editBuilder.replace(range, filteredText);
-                            }
-                            else {
-                                editBuilder.insert(editor.document.positionAt(0), filteredText);
                             }
                         });
                         editor.revealRange(range);
@@ -77,19 +73,13 @@ function filterText(inplace: boolean): void {
     });
 }
 
-function getTempEditor() : PromiseLike<vscode.TextEditor> {
+function getTempEditor(content: string) : PromiseLike<vscode.TextEditor> {
     return new Promise((resolve, reject) => {
-        tmp.file((err, path, fd, cleanupCallback) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            vscode.workspace.openTextDocument(path).then(
-                (doc) => {
-                    resolve(vscode.window.showTextDocument(doc));
-                },
-                (err) => reject(err)
-            );
-        });
+        vscode.workspace.openTextDocument({content: content, language: "" } as any).then(
+            (doc) => {
+                resolve(vscode.window.showTextDocument(doc));
+            },
+            (err) => reject(err)
+        );
     });
 }
