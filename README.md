@@ -20,6 +20,8 @@ It brings the power of Unix commands such as `sort` and `uniq` into your VS Code
 
 ## Changes
 
+* 07/20/2017: v0.0.5 - Make temp buffer a vscode tmp doc instead of system tmp file
+* 07/19/2017: v0.0.4 - Allow filter buffer if no selection
 * 04/01/2017: v0.0.3 - Added ability to feed result into temp file
 * 11/24/2015: v0.0.2 - Changed the keybindg from `Ctrl+Shift+F` to `Ctrl+K Ctrl+F`.
 * 11/23/2015: v0.0.1 - Initial release.
