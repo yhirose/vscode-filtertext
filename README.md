@@ -20,6 +20,7 @@ It brings the power of Unix commands such as `sort` and `uniq` into your VS Code
 
 ## Changes
 
+* 12/25/2017: v0.0.6 - Pipe support
 * 07/20/2017: v0.0.5 - Make temp buffer a vscode tmp doc instead of system tmp file
 * 07/19/2017: v0.0.4 - Allow filter buffer if no selection
 * 04/01/2017: v0.0.3 - Added ability to feed result into temp file
