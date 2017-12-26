@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';
-var which = require('which');
-var shell_quote = require('shell-quote');
-var lastCommand: string = "";
+import * as which from 'which';
+import * as shell_quote from 'shell-quote';
+
+let lastEntry: string = '';
 
 export function activate(context: vscode.ExtensionContext) {
     let inplace = vscode.commands.registerCommand('extension.filterTextInplace', () => filterText(true));
@@ -12,68 +13,118 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(tofile);
 }
 
-function filterText(inplace: boolean): void {
+async function filterText(inplace: boolean) {
     vscode.window.showInputBox({
         placeHolder: 'Please enter command name and arguments.',
-        value: lastCommand
-    }).then((entry: string) => {
+        value: lastEntry
+    }).then(async (entry: string) => {
         if (entry) {
-            var args = shell_quote.parse(entry);
-            if (!args.length) {
-                return;
+            const commands = shell_quote.parse(entry).reduce((r, v) => {
+                if (v.op === '|') {
+                    return r.concat([[]]);
+                } else {
+                    r[r.length - 1].push(v);
+                    return r;
+                }
+            }, [[]]);
+
+            if (!commands.length) {
+              return;
             }
-            lastCommand = entry; // save even if not a valid command to make it easier to fix a typo
-            var name = args.shift();
 
-            which(name, (err, path) => {
-                if (err) {
-                    vscode.window.showErrorMessage('Invalid command is entered.');
-                    return;
-                }
-                let config = (vscode.workspace.getConfiguration('filterText') as any);
-                let useDocument = config.useDocumentIfEmptySelection;
-                let editor = vscode.window.activeTextEditor;
-                let filter = child_process.spawn(path, args);
-                var range = undefined;
-                var filteredText = '';
+            lastEntry = entry; // save even if not a valid command to make it easier to fix a typo
 
-                if (!editor.selection.isEmpty) {
-                    range = editor.selection;
-                }
+            const range = getSelectionRange();
+            let text = getTextFromRange(range);
 
-                if (range === undefined && editor.document.lineCount > 0 && useDocument === true) {
-                    let lineCount = editor.document.lineCount;
-                    range = new vscode.Range(0, 0, lineCount, editor.document.lineAt(lineCount-1).text.length);
-                }
+            for (const args of commands) {
+              if (!args.length) {
+                  return;
+              }
 
-                if (range !== undefined) {
-                    filter.stdin.write(editor.document.getText(range));
-                    filter.stdin.end();
-                }
+              try {
+                  const name = args.shift();
+                  text = await executeCommand(name, args, text);
+              } catch(err) {
+                  vscode.window.showErrorMessage('Invalid command is entered.');
+                  return;
+              }
+            }
 
-                filter.stdout.on('data', function (data) {
-                    filteredText += data;
-                });
-                filter.stdout.on('end', function () {
-                    let target = inplace ? Promise.resolve(vscode.window.activeTextEditor) : getTempEditor(filteredText);
-                    target.then((editor) => {
-                        editor.edit((editBuilder) => {
-                            if (inplace) {
-                                editBuilder.replace(range, filteredText);
-                            }
-                        });
-                        editor.revealRange(range);
-                    }, (reason: Error) => {
-                        vscode.window.showErrorMessage(reason.message);
-                    });
-                 
-                });
-            });
+            setTextToSelectionRange(inplace, range, text);
         }
     });
 }
 
-function getTempEditor(content: string) : PromiseLike<vscode.TextEditor> {
+function getSelectionRange(): vscode.Selection {
+    let config = (vscode.workspace.getConfiguration('filterText') as any);
+    let useDocument = config.useDocumentIfEmptySelection;
+
+    let editor = vscode.window.activeTextEditor;
+
+    let range = undefined;
+    if (!editor.selection.isEmpty) {
+        range = editor.selection;
+    }
+
+    if (range === undefined && editor.document.lineCount > 0 && useDocument === true) {
+        let lineCount = editor.document.lineCount;
+        range = new vscode.Range(0, 0, lineCount, editor.document.lineAt(lineCount-1).text.length);
+    }
+
+    return range;
+}
+
+function getTextFromRange(range: vscode.Selection): string {
+    if (range !== undefined) {
+        let editor = vscode.window.activeTextEditor;
+        return editor.document.getText(range);
+    }
+    return '';
+}
+
+function setTextToSelectionRange(inplace: boolean, range: vscode.Selection, text: string): void {
+    let target = inplace ? Promise.resolve(vscode.window.activeTextEditor) : getTempEditor(text);
+    target.then((editor) => {
+        editor.edit((editBuilder) => {
+            if (inplace) {
+                editBuilder.replace(range, text);
+            }
+        });
+        editor.revealRange(range);
+    }, (reason: Error) => {
+        vscode.window.showErrorMessage(reason.message);
+    });
+}
+
+function executeCommand(name: string, args: string[], inputText: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+        which(name, (err, path) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+
+            let filter = child_process.spawn(path, args);
+
+            if (inputText.length > 0) {
+                filter.stdin.write(inputText);
+                filter.stdin.end();
+            }
+
+            let filteredText = '';
+            filter.stdout.on('data', function (data) {
+                filteredText += data;
+            });
+
+            filter.stdout.on('end', function () {
+                resolve(filteredText);
+            });
+        });
+    });
+}
+
+function getTempEditor(content: string): PromiseLike<vscode.TextEditor> {
     return new Promise((resolve, reject) => {
         vscode.workspace.openTextDocument({content: content, language: "" } as any).then(
             (doc) => {
