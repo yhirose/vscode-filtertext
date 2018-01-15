@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';
+import * as os from 'os';
+import * as glob from 'glob';
 import * as which from 'which';
 import * as shell_quote from 'shell-quote';
 
@@ -19,9 +21,15 @@ async function filterText(inplace: boolean) {
         value: lastEntry
     }).then(async (entry: string) => {
         if (entry) {
+            const cwd = getCurrentWorkingDirectory();
+
             const commands = shell_quote.parse(entry).reduce((r, v) => {
                 if (v.op === '|') {
                     return r.concat([[]]);
+                } if (v.op === 'glob') {
+                    const items = glob.sync(v.pattern, { cwd });
+                    r[r.length - 1] = r[r.length - 1].concat(items);
+                    return r;
                 } else {
                     r[r.length - 1].push(v);
                     return r;
@@ -44,7 +52,7 @@ async function filterText(inplace: boolean) {
 
               try {
                   const name = args.shift();
-                  text = await executeCommand(name, args, text);
+                  text = await executeCommand(name, args, text, { cwd });
               } catch(err) {
                   vscode.window.showErrorMessage('Invalid command is entered.');
                   return;
@@ -97,7 +105,7 @@ function setTextToSelectionRange(inplace: boolean, range: vscode.Selection, text
     });
 }
 
-function executeCommand(name: string, args: string[], inputText: string): Promise<string> {
+function executeCommand(name: string, args: string[], inputText: string, options: object): Promise<string> {
     return new Promise((resolve, reject) => {
         which(name, (err, path) => {
             if (err) {
@@ -105,7 +113,7 @@ function executeCommand(name: string, args: string[], inputText: string): Promis
                 return;
             }
 
-            let filter = child_process.spawn(path, args);
+            let filter = child_process.spawn(path, args, options);
 
             if (inputText.length > 0) {
                 filter.stdin.write(inputText);
@@ -133,4 +141,22 @@ function getTempEditor(content: string): PromiseLike<vscode.TextEditor> {
             (err) => reject(err)
         );
     });
+}
+
+function getCurrentWorkingDirectory(): string {
+    const uri = vscode.window.activeTextEditor.document.uri;
+
+    if (uri && uri.scheme === 'file') {
+        const folder = vscode.workspace.getWorkspaceFolder(uri);
+        if (folder) {
+            return folder.uri.fsPath;
+        }
+
+        const folders = vscode.workspace.workspaceFolders;
+        if (folders.length > 0) {
+            return folders[0].uri.fsPath;
+        }
+    }
+
+    return os.homedir();
 }
