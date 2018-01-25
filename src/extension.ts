@@ -152,9 +152,12 @@ function getCurrentWorkingDirectory(): string {
             return folder.uri.fsPath;
         }
 
-        const folders = vscode.workspace.workspaceFolders;
-        if (folders.length > 0) {
-            return folders[0].uri.fsPath;
+        try {
+          const folders = vscode.workspace.workspaceFolders;
+          if (folders.length > 0) {
+              return folders[0].uri.fsPath;
+          }
+        } catch(err) {
         }
     }
 
