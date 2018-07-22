@@ -106,13 +106,14 @@ function setTextToSelectionRange(inplace: boolean, range: vscode.Selection, text
 }
 
 function executeCommand(name: string, args: string[], inputText: string, options: object): Promise<string> {
+    let config = (vscode.workspace.getConfiguration('filterText') as any);
+    let platform = os.platform();
+    let bashPath = null;
+    if (platform === 'win32' && config.invokeViaBash.windows === true) {
+        bashPath = config.bashPath.windows; // config.bashPath.windows default to "C:/cygwin/bin/bash.exe"
+    }
     return new Promise((resolve, reject) => {
-        which(name, (err, path) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-
+        let run = (path, args, resolve) => {
             let filter = child_process.spawn(path, args, options);
 
             if (inputText.length > 0) {
@@ -128,7 +129,19 @@ function executeCommand(name: string, args: string[], inputText: string, options
             filter.stdout.on('end', function () {
                 resolve(filteredText);
             });
-        });
+        };
+        if (bashPath === null) {
+            which(name, (err, path) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                run(path, args, resolve);
+            });
+        } else {
+            let prependArgs = ['-lc', '"$@"', '[bash]', name];
+            run(bashPath, prependArgs.concat(args), resolve);
+        }
     });
 }
 
