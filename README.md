@@ -20,6 +20,7 @@ It brings the power of Unix commands such as `sort` and `uniq` into your VS Code
 
 ## Changes
 
+* 07/22/2018: v0.0.9 - Added support and settings for using bash's commands or scripts
 * 01/25/2018: v0.0.8 - Set current working directory for the command to match the opened directory
 * 01/14/2018: v0.0.7 - Set current working directory for the command to match the opened directory
 * 12/25/2017: v0.0.6 - Pipe support
