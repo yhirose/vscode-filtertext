@@ -139,7 +139,13 @@ function executeCommand(name: string, args: string[], inputText: string, options
                 run(path, args, resolve);
             });
         } else {
-            let prependArgs = ['-lc', '"$@"', '[bash]', name];
+            let prependArgs;
+            let cwd = options['cwd'];
+            // invoke bash with "-l" (--login) option.  This is needed for Cygwin where the Cygwin's C:/cygwin/bin path may exist in PATH only after --login.
+            if (cwd != null)
+                prependArgs = ['-lc', 'cd "$0"; "$@"', cwd, name]; // set current working directory after bash's --login (-l)
+            else
+                prependArgs = ['-lc', '"$@"', '[bash]', name];
             run(bashPath, prependArgs.concat(args), resolve);
         }
     });
