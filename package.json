@@ -31,6 +31,16 @@
           "type": "boolean",
           "default": true,
           "description": "If no text is selected, filter the entire document."
+        },
+        "filterText.invokeViaBash.windows": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to invoke filter command via bash on windows."
+        },
+        "filterText.bashPath.windows": {
+          "type": "string",
+          "default": "C:/cygwin/bin/bash.exe",
+          "description": "Path of the bash to use.  Default to Cygwin's path."
         }
       }
     },
