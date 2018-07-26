@@ -118,8 +118,8 @@ function executeCommand(name: string, args: string[], inputText: string, options
 
             if (inputText.length > 0) {
                 filter.stdin.write(inputText);
-                filter.stdin.end();
             }
+            filter.stdin.end();
 
             let filteredText = '';
             filter.stdout.on('data', function (data) {
