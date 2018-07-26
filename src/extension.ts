@@ -54,7 +54,7 @@ async function filterText(inplace: boolean) {
                   const name = args.shift();
                   text = await executeCommand(name, args, text, { cwd });
               } catch(err) {
-                  vscode.window.showErrorMessage('Invalid command is entered.');
+                  vscode.window.showErrorMessage(err);
                   return;
               }
             }
@@ -122,18 +122,26 @@ function executeCommand(name: string, args: string[], inputText: string, options
             filter.stdin.end();
 
             let filteredText = '';
+            let errorText = '';
             filter.stdout.on('data', function (data) {
                 filteredText += data;
             });
 
-            filter.stdout.on('end', function () {
-                resolve(filteredText);
+            filter.stderr.on('data', function (data) {
+                errorText += data;
+            });
+            filter.on('close', function (code: number, signal: string) {
+                if (filteredText == '' && code != 0 && errorText != '') { // Only reject and show error when stdout got nothing, exit status indicate failure, and stderr got something.  E.g. grep with no match will have failure status, but no error message or output, shouldn't show error here.
+                    reject("Command exits (status: " + code + ") with error message:\n" + errorText);
+                } else {
+                    resolve(filteredText);
+                }
             });
         };
         if (bashPath === null) {
             which(name, (err, path) => {
                 if (err) {
-                    reject(err);
+                    reject('Invalid command is entered.');
                     return;
                 }
                 run(path, args, resolve);
@@ -143,9 +151,9 @@ function executeCommand(name: string, args: string[], inputText: string, options
             let cwd = options['cwd'];
             // invoke bash with "-l" (--login) option.  This is needed for Cygwin where the Cygwin's C:/cygwin/bin path may exist in PATH only after --login.
             if (cwd != null)
-                prependArgs = ['-lc', 'cd "$0"; "$@"', cwd, name]; // set current working directory after bash's --login (-l)
+                prependArgs = ['-lc', 'cd "$1"; shift; "$@"', 'bash', cwd, name]; // set current working directory after bash's --login (-l)
             else
-                prependArgs = ['-lc', '"$@"', '[bash]', name];
+                prependArgs = ['-lc', '"$@"', 'bash', name]; // 'bash' at "$0" is the program name for stderr messages' labels.
             run(bashPath, prependArgs.concat(args), resolve);
         }
     });
