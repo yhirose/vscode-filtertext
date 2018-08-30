@@ -4,6 +4,7 @@ import * as os from 'os';
 import * as glob from 'glob';
 import * as which from 'which';
 import * as shell_quote from 'shell-quote';
+import { dirname } from 'path';
 
 let lastEntry: string = '';
 
@@ -180,12 +181,13 @@ function getCurrentWorkingDirectory(): string {
             return folder.uri.fsPath;
         }
 
-        try {
-          const folders = vscode.workspace.workspaceFolders;
-          if (folders.length > 0) {
-              return folders[0].uri.fsPath;
-          }
-        } catch(err) {
+        const folders = vscode.workspace.workspaceFolders;
+        if (folders != undefined && folders.length > 0) {
+            return folders[0].uri.fsPath;
+        }
+        // Github #9: if no workspace folders, and uri.scheme !== 'untitled' (i.e. existing file), use folder of that file. Otherwise, use user home directory.
+        if (uri.scheme !== 'untitled') {
+            return dirname(uri.fsPath);
         }
     }
 
