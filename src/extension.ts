@@ -173,7 +173,8 @@ function getTempEditor(content: string): PromiseLike<vscode.TextEditor> {
 function getCurrentWorkingDirectory(): string {
     const uri = vscode.window.activeTextEditor.document.uri;
 
-    if (uri && uri.scheme === 'file') {
+    const isFileOrUntitledDocument = uri && (uri.scheme === 'file' || uri.scheme === 'untitled');
+    if (isFileOrUntitledDocument) {
         const folder = vscode.workspace.getWorkspaceFolder(uri);
         if (folder) {
             return folder.uri.fsPath;
