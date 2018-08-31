@@ -20,6 +20,7 @@ It brings the power of Unix commands such as `sort` and `uniq` into your VS Code
 
 ## Changes
 
+* 08/30/2018: v0.0.11 - Better working directry handling.
 * 07/28/2018: v0.0.10 - Better error reporting. In case command exited with failure status, and leave only error messages without stdout, don't change text selection but pop an error message instead. When filter on empty document (zero bytes), need to close stdin to avoid child process reading stdin never terminate (dangling).
 * 07/22/2018: v0.0.9 - Added support and settings for using bash's commands or scripts
 * 01/25/2018: v0.0.8 - Set current working directory for the command to match the opened directory
