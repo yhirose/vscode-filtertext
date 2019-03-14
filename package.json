@@ -2,7 +2,7 @@
   "name": "FilterText",
   "displayName": "Filter Text",
   "description": "Filter selected text through an external shell command.",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "publisher": "yhirose",
   "icon": "images/icon.png",
   "engines": {
