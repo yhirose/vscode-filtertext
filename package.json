@@ -41,6 +41,11 @@
           "type": "string",
           "default": "C:/cygwin/bin/bash.exe",
           "description": "Path of the bash to use.  Default to Cygwin's path."
+        },
+        "filterText.useDocumentDirAsWorkDir": {
+          "type": "boolean",
+          "default": false,
+          "description": "Always use the path of the current file as the current working dir instead of the heuristic."
         }
       }
     },
