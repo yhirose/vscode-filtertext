@@ -179,7 +179,6 @@ function getCurrentWorkingDirectory(): string {
         const useDocumentDirAsWorkDir = vscode.workspace.getConfiguration('filterText').useDocumentDirAsWorkDir;
 
         if (useDocumentDirAsWorkDir && uri.scheme === 'file') {
-            vscode.window.showInformationMessage('Using doc dir as cwd; dirname: ' + dirname(uri.fsPath));
             return dirname(uri.fsPath);
         }
 
