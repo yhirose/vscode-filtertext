@@ -18,6 +18,18 @@ It brings the power of Unix commands such as `sort` and `uniq` into your VS Code
 
 ![Filter selected text](images/filtertext.gif)
 
+### Keybindings
+
+It is possible to map specific commands to key bindings. Example usage in `keybindings.json`:
+
+```
+{
+    "key": "shift+alt+l",
+    "command": "extension.filterTextInplace",
+    "args": { "cmd": "sort" }
+}
+```
+
 ## Changes
 
 * 03/14/2019: v0.0.12 - Improvement: Add option to always use a file's dir as current working

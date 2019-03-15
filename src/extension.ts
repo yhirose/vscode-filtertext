@@ -9,60 +9,70 @@ import { dirname } from 'path';
 let lastEntry: string = '';
 
 export function activate(context: vscode.ExtensionContext) {
-    let inplace = vscode.commands.registerCommand('extension.filterTextInplace', () => filterText(true));
-    let tofile = vscode.commands.registerCommand('extension.filterText', () => filterText(false));
+    let inplace = vscode.commands.registerCommand('extension.filterTextInplace', (args?: {}) => filterTextWrapper(true, args));
+    let tofile = vscode.commands.registerCommand('extension.filterText', (args?: {}) => filterTextWrapper(false, args));
 
     context.subscriptions.push(inplace);
     context.subscriptions.push(tofile);
 }
 
-async function filterText(inplace: boolean) {
-    vscode.window.showInputBox({
-        placeHolder: 'Please enter command name and arguments.',
-        value: lastEntry
-    }).then(async (entry: string) => {
-        if (entry) {
-            const cwd = getCurrentWorkingDirectory();
+async function filterTextWrapper(inplace: boolean, args?: {}) {
+    if (typeof args === 'undefined') {
+        vscode.window.showInputBox({
+            placeHolder: 'Please enter command name and arguments.',
+            value: lastEntry
+        }).then(async (entry: string) => {
+            filterText(inplace, entry);
+        });
+    } else if (('cmd' in args) && (typeof args['cmd'] === 'string')) {
+        filterText(inplace, args['cmd']);
+    } else {
+        vscode.window.showErrorMessage('Invalid arguments passed. Must be a hash map with key \"cmd\" of type string.');
+    }
+}
 
-            const commands = shell_quote.parse(entry).reduce((r, v) => {
-                if (v.op === '|') {
-                    return r.concat([[]]);
-                } if (v.op === 'glob') {
-                    const items = glob.sync(v.pattern, { cwd });
-                    r[r.length - 1] = r[r.length - 1].concat(items);
-                    return r;
-                } else {
-                    r[r.length - 1].push(v);
-                    return r;
-                }
-            }, [[]]);
+async function filterText(inplace: boolean, entry: string) {
+    if (entry) {
+        const cwd = getCurrentWorkingDirectory();
 
-            if (!commands.length) {
-              return;
+        const commands = shell_quote.parse(entry).reduce((r, v) => {
+            if (v.op === '|') {
+                return r.concat([[]]);
+            } if (v.op === 'glob') {
+                const items = glob.sync(v.pattern, { cwd });
+                r[r.length - 1] = r[r.length - 1].concat(items);
+                return r;
+            } else {
+                r[r.length - 1].push(v);
+                return r;
             }
+        }, [[]]);
 
-            lastEntry = entry; // save even if not a valid command to make it easier to fix a typo
-
-            const range = getSelectionRange();
-            let text = getTextFromRange(range);
-
-            for (const args of commands) {
-              if (!args.length) {
-                  return;
-              }
-
-              try {
-                  const name = args.shift();
-                  text = await executeCommand(name, args, text, { cwd });
-              } catch(err) {
-                  vscode.window.showErrorMessage(err);
-                  return;
-              }
-            }
-
-            setTextToSelectionRange(inplace, range, text);
+        if (!commands.length) {
+          return;
         }
-    });
+
+        lastEntry = entry; // save even if not a valid command to make it easier to fix a typo
+
+        const range = getSelectionRange();
+        let text = getTextFromRange(range);
+
+        for (const args of commands) {
+          if (!args.length) {
+              return;
+          }
+
+          try {
+              const name = args.shift();
+              text = await executeCommand(name, args, text, { cwd });
+          } catch(err) {
+              vscode.window.showErrorMessage(err);
+              return;
+          }
+        }
+
+        setTextToSelectionRange(inplace, range, text);
+    }
 }
 
 function getSelectionRange(): vscode.Selection {
