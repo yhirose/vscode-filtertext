@@ -32,6 +32,7 @@ It is possible to map specific commands to key bindings. Example usage in `keybi
 
 ## Changes
 
+* 03/16/2019: v0.0.13 - Implemented passing in the command as an argument
 * 03/14/2019: v0.0.12 - Improvement: Add option to always use a file's dir as current working
 * 08/30/2018: v0.0.11 - Better working directry handling.
 * 07/28/2018: v0.0.10 - Better error reporting. In case command exited with failure status, and leave only error messages without stdout, don't change text selection but pop an error message instead. When filter on empty document (zero bytes), need to close stdin to avoid child process reading stdin never terminate (dangling).
