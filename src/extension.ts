@@ -86,9 +86,14 @@ function getSelectionRange(): vscode.Selection {
         range = editor.selection;
     }
 
-    if (range === undefined && editor.document.lineCount > 0 && useDocument === true) {
-        let lineCount = editor.document.lineCount;
-        range = new vscode.Range(0, 0, lineCount, editor.document.lineAt(lineCount-1).text.length);
+    if (range === undefined) {
+        if (useDocument === false) {
+            let position = editor.selection.anchor;
+            range = new vscode.Range(position.line, position.character, position.line, position.character);
+        } else if (editor.document.lineCount > 0) {
+            let lineCount = editor.document.lineCount;
+            range = new vscode.Range(0, 0, lineCount, editor.document.lineAt(lineCount - 1).text.length);
+        }        
     }
 
     return range;
