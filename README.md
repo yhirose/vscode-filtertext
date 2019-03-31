@@ -32,6 +32,7 @@ It is possible to map specific commands to key bindings. Example usage in `keybi
 
 ## Changes
 
+* 03/31/2019: v0.0.14 - Fix used document filter flag when false
 * 03/16/2019: v0.0.13 - Implemented passing in the command as an argument
 * 03/14/2019: v0.0.12 - Improvement: Add option to always use a file's dir as current working
 * 08/30/2018: v0.0.11 - Better working directry handling.
