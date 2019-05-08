@@ -20,7 +20,8 @@
   },
   "activationEvents": [
     "onCommand:extension.filterTextInplace",
-    "onCommand:extension.filterText"
+    "onCommand:extension.filterText",
+    "onCommand:extension.filterPredefined"
   ],
   "main": "./out/src/extension",
   "contributes": {
@@ -46,17 +47,46 @@
           "type": "boolean",
           "default": false,
           "description": "Always use the path of the current file as the current working dir instead of the heuristic."
+        },
+        "filterText.commandList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "inner objects",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name of the command entry."
+              },
+              "description": {
+                "type": "string",
+                "description": "Description of the command."
+              },
+              "command": {
+                "type": "string",
+                "description": "The actual command to invoke, e.g. sort | uniq."
+              }
+            }
+          },
+          "description": "List of predefined commands"
         }
       }
     },
     "commands": [
       {
         "command": "extension.filterTextInplace",
-        "title": "Filter Text Inplace"
+        "title": "Filter text in-place",
+        "category": "FilterText"
+      },
+      {
+        "command": "extension.filterPredefined",
+        "title": "Run predefined filter",
+        "category": "FilterText"
       },
       {
         "command": "extension.filterText",
-        "title": "Filter Text"
+        "title": "Run filter through selected text",
+        "category": "FilterText"
       }
     ],
     "keybindings": [
