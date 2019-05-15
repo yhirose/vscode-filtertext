@@ -11,9 +11,81 @@ let lastEntry: string = '';
 export function activate(context: vscode.ExtensionContext) {
     let inplace = vscode.commands.registerCommand('extension.filterTextInplace', (args?: {}) => filterTextWrapper(true, args));
     let tofile = vscode.commands.registerCommand('extension.filterText', (args?: {}) => filterTextWrapper(false, args));
+    let predefined = vscode.commands.registerCommand('extension.filterPredefined', (args?: {}) => filterPredefined());
 
     context.subscriptions.push(inplace);
     context.subscriptions.push(tofile);
+    context.subscriptions.push(predefined);
+}
+
+/**
+ * This implementation of the QuickPickItem contains the information necessary
+ * for displaying a quickpick item, as well as the command it should execute.
+ */
+class Item implements vscode.QuickPickItem {
+    label: string;
+    description: string;
+
+    /**
+     * The literal command which the user wants to execute when this item is
+     * picked from the QuickPick list.
+     */
+    command: string;
+
+    constructor(label: string, description: string, command: string) {
+        this.label = label;
+        this.description = description;
+        this.command = command;
+    }
+
+    /**
+     * Runs the command.
+     */
+    run() {
+        let cmd = {
+            cmd: this.command
+        };
+        filterTextWrapper(true, cmd);
+    }
+};
+
+/**
+ * This function reads an array of predefined commands from the settings.json,
+ * and displays them to the user as a quickpick.
+ */
+async function filterPredefined() {
+    let config = (vscode.workspace.getConfiguration('filterText') as any);
+
+    let arr: Item[] = [];
+
+    for (let i = 0; i < config.commandList.length; i++) {
+        let cmd = config.commandList[i];
+
+        // No command name was given. The quickpick list will fail if the label
+        // is undefined and therefore we warn the user and skip the iteration.
+        if (!cmd.name) {
+            vscode.window.showWarningMessage(`The command configured at
+            index ${i} is misconfigured and will be ignored.`);
+            continue;
+        }
+
+        // No command is given, so that's pretty useless. Give a warning.
+        if (!cmd.command) {
+            vscode.window.showWarningMessage(`The command "${cmd.name}" configured at
+            index ${i} has no "command" property configured to execute, and will be ignored.`);
+            continue;
+        }
+
+        arr.push(new Item(cmd.name, cmd.description, cmd.command));
+    }
+
+    // Last but not least, show the quickpick list.
+    vscode.window.showQuickPick(arr).then((value: Item) => {
+        if (value) {
+            value.run();
+        }
+    });
+
 }
 
 async function filterTextWrapper(inplace: boolean, args?: {}) {
@@ -93,7 +165,7 @@ function getSelectionRange(): vscode.Selection {
         } else if (editor.document.lineCount > 0) {
             let lineCount = editor.document.lineCount;
             range = new vscode.Range(0, 0, lineCount, editor.document.lineAt(lineCount - 1).text.length);
-        }        
+        }
     }
 
     return range;

@@ -14,7 +14,7 @@ It brings the power of Unix commands such as `sort` and `uniq` into your VS Code
 ### NOTE
 
 * If you didn't select anything, it simply inserts the result text at the current cursor position.
-* If you selected `Filter Text` command it opens temp editor with the result
+* If you selected `Filter Text` command it opens temp editor with the result.
 
 
 ![Filter selected text](images/filtertext.gif)
@@ -23,7 +23,7 @@ It brings the power of Unix commands such as `sort` and `uniq` into your VS Code
 
 It is possible to map specific commands to key bindings. Example usage in `keybindings.json`:
 
-```
+```json
 {
     "key": "shift+alt+l",
     "command": "extension.filterTextInplace",
@@ -31,6 +31,30 @@ It is possible to map specific commands to key bindings. Example usage in `keybi
 }
 ```
 
+### Configuration
+
+Commands can be predefined in the `settings.json` as follows:
+
+```json
+"filterText.commandList": [
+    {
+        "name": "Sort unique",
+        "description": "Sorts and find the unique entries",
+        "command": "sort | uniq"
+    },
+    {
+        "name": "Columnize CSV",
+        "description": "Columnize comma separated values",
+        "command": "column -s \",\" -t"
+    },
+    {
+        "name": "XML lint",
+        "description": "Run the command through xmllint",
+        "command": "xmllint --format -"
+    }
+]
+
+```
 ## Changes
 
 * 03/31/2019: v0.0.14 - Fix used document filter flag when false
