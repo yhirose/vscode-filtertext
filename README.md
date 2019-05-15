@@ -6,7 +6,8 @@ It brings the power of Unix commands such as `sort` and `uniq` into your VS Code
 ## Usage
 
 * Select text that you want to filter.
-* Press `Ctrl+K Ctrl+F` (or press `F1` and run the command named `Filter Text Inplace`).
+* Press `Ctrl+K Ctrl+F` (`⌘K ⌘F` on macOS).
+    * Alternatively, press `F1` and run the command named `Filter Text Inplace`.
 * Type shell command like `sort -r` and press enter.
 * It replaces the selected text with the text from stdout of the command.
 

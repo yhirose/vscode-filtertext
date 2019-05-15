@@ -62,6 +62,7 @@
     "keybindings": [
       {
         "key": "ctrl+k ctrl+f",
+        "mac": "cmd+k cmd+f",
         "command": "extension.filterTextInplace",
         "when": "editorTextFocus"
       }
