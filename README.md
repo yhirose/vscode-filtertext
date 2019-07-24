@@ -3,6 +3,8 @@
 This extension filters selected text through an external shell command inplace or into temp file.
 It brings the power of Unix commands such as `sort` and `uniq` into your VS Code editor.
 
+https://marketplace.visualstudio.com/items?itemName=yhirose.FilterText
+
 ## Usage
 
 * Select text that you want to filter.
