@@ -57,6 +57,7 @@ Commands can be predefined in the `settings.json` as follows:
 ```
 ## Changes
 
+* 07/24/2019: v0.0.15 - Predefined commands via settings.json. Add macOS keybinding to fix Delete All Right
 * 03/31/2019: v0.0.14 - Fix used document filter flag when false
 * 03/16/2019: v0.0.13 - Implemented passing in the command as an argument
 * 03/14/2019: v0.0.12 - Improvement: Add option to always use a file's dir as current working

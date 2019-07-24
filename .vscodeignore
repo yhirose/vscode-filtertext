@@ -7,3 +7,4 @@ misc/**
 **/*.map
 .gitignore
 tsconfig.json
+.node-version

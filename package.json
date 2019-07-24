@@ -2,7 +2,7 @@
   "name": "FilterText",
   "displayName": "Filter Text",
   "description": "Filter selected text through an external shell command.",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "publisher": "yhirose",
   "icon": "images/icon.png",
   "engines": {
@@ -104,12 +104,12 @@
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
   "devDependencies": {
-    "typescript": "^2.0.3",
-    "vscode": "^1.0.0",
-    "mocha": "^2.3.3",
-    "eslint": "^3.6.0",
+    "@types/mocha": "^2.2.32",
     "@types/node": "^6.0.40",
-    "@types/mocha": "^2.2.32"
+    "eslint": ">=4.18.2",
+    "mocha": "^6.2.0",
+    "typescript": "^2.0.3",
+    "vscode": "^1.1.35"
   },
   "dependencies": {
     "glob": "^7.1.2",
